@@ -15,22 +15,21 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object MapView {
-  private val ApiKey = "AIzaSyAFn_20TGxeLBxwLQ6GfnhOzrvHjyYOVcw"
   private val WatermarkSize = 44
-  private implicit val timeout: Timeout = Timeout(1.hour)
+  private implicit val DownloadTimeout: Timeout = Timeout(30.minutes)
 }
 
-class MapView(system: ActorSystem, zoom: Int, mapType: String) {
+class MapView(system: ActorSystem, zoom: Int, mapType: String, apiKey: String) {
 
   import system.dispatcher
 
-  val lngOffset = zoom match {
+  val lngOffset: Double = zoom match {
     case 20 => 0.0008
     case 18 => 0.00322
     case 16 => 0.01285
     case _  => 0.0
   }
-  val latOffset = zoom match {
+  val latOffset: Double = zoom match {
     case 20 => 0.000518
     case 18 => 0.002065
     case 16 => 0.008250
@@ -49,10 +48,10 @@ class MapView(system: ActorSystem, zoom: Int, mapType: String) {
         "&key=%s")
         .formatLocal(
           Locale.US,
-          location.latitude, location.longitude, zoom, mapType, MapView.ApiKey
+          location.latitude, location.longitude, zoom, mapType, apiKey
         )
     }
-    import MapView.timeout
+    import MapView.DownloadTimeout
     (IO(Http)(system) ? HttpRequest(GET, Uri(url))).mapTo[HttpResponse]
       .map(_.entity.data.toByteArray)
       .map(Image.apply)

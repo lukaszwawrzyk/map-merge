@@ -5,7 +5,8 @@ case class Config(
   location: Location,
   radius: Int,
   mapType: String,
-  outputPath: String
+  outputPath: String,
+  apiKey: String
 )
 
 object Config {
@@ -14,7 +15,8 @@ object Config {
     location = Location(50.065352, 19.909054),
     radius = 3,
     mapType = "satellite",
-    outputPath = "out.jpg"
+    outputPath = "out.jpg",
+    apiKey = "changeme"
   )
 }
 
@@ -55,6 +57,10 @@ object ConfigReader {
     (opt[String]('o', "out")
       action { (path, conf) => conf.copy(outputPath = path) }
       text "Output file name")
+
+    (opt[String]('k', "api-key")
+      action { (key, conf) => conf.copy(apiKey = key) }
+      text "Key for google map api")
 
     help("help") text "prints this usage text"
   }
